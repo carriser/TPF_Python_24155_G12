@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width"> 
+        <title>Club de Caballeros - Modificar cliente</title>
+        <link rel="stylesheet" href="./static/css/reset.css">
+        <link rel="stylesheet" href="./static/css/style.css">
+        <link rel="icon" href="./static/imagenes/logo-ovalo.ico">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.1/css/all.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    </head>
+
+    <body>
+        <header>
+            <div class="caja">
+                <img src="./static/imagenes/logo-principal 350x270.png" alt="logo de la barbería">
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="productos.html">Productos</a></li>
+                        <li><a href="estilos.html">Estilos</a></li>
+                        <li><a href="contacto.html">Contacto</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <h1>Modificar datos de Cliente</h1>
+
+        <!-- Contenedor principal que será controlado por JavaScript. Este contenedor tendrá dos formularios. -->
+        <div id="app">
+            <!-- Primer formulario: Selector de cliente. LLama a la función obtenerCliente cuando se envíe el formulario -->
+            <div class="container d-flex justify-content-center">
+                <form id="form-obtener-cliente">
+                    <label for="codigo">Código:</label>
+                    <input type="text" id="codigo" required><br><br>
+                    <button type="submit" class="btn btn-primary">Modificar Cliente</button>
+                    <a href="consultas.html">Cancelar</a>
+                </form>
+            </div>
+
+            <!-- Segundo formulario: se muestra solo si mostrarDatosCliente es verdadero. Llama a la función guardarCambios -->
+            <div id="datos-cliente" style="display: none;">
+                <h3 class="titulo-principal">Datos del Cliente</h3>
+                <div class="container d-flex justify-content-center">
+                    <form id="form-guardar-cambios">
+                        <label for="nombreModificar">Nombre y Apellido:</label>
+                        <input type="text" id="nombreModificar" readonly><br><br>
+
+                        <label for="correoModificar">Correo Electrónico:</label>
+                        <input type="text" id="correoModificar" required><br><br>
+
+                        <label for="telefonoModificar">Teléfono:</label>
+                        <input type="tel" id="telefonoModificar" required><br><br>
+
+                        <label for="mensajeModificar">Mensaje:</label>
+                        <input type="text" id="mensajeModificar" required><br><br>
+
+                        <!-- Imagen actual del producto - Debe comentarse al subirse al servidor-->
+                        <img id="imagen-actual" style="max-width: 200px; display: none;">
+                        <!-- Vista previa de la nueva imagen seleccionada -->
+                        <img id="imagen-vista-previa" style="max-width: 200px; display: none;">
+                        <br>
+
+                        <!-- Input para nueva imagen -->
+                        <label for="nuevaImagen">Nueva Imagen:</label>
+                        <input type="file" id="nuevaImagen"><br><br>
+
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        <a href="modificaciones.html">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <img src="./static/imagenes/logo-foot.png">
+            <p class="copyright">&copy Copyright Barbería Club de Caballeros - 2020</p>
+            <a href="https://www.facebook.com/BarberiaClubDeCaballeros" target="_blank"> <i class="fab fa-facebook fa-2x" aria-hidden="true"></i></a>
+            <a href="https://www.instagram.com/barberiaclubdecaballerosok/?hl=es" target="_blank"> <i class="fab fa-instagram fa-2x" aria-hidden="true"></i></a>
+        </footer>
+
+        <script>
+            //const URL = "https://FlorCodo.pythonanywhere.com/"
+            // Al subir al servidor, deberá utilizarse la siguiente ruta. USUARIO debe ser reemplazado por el nombre de usuario de Pythonanywhere
+            //const URL = "https://USUARIO.pythonanywhere.com/"
+            //const URL = "http://127.0.0.1:5000/"
+            //const URL = "https://sergiopython.pythonanywhere.com/"
+            const URL = "https://grupo12python.pythonanywhere.com/"
+
+            // Variables de estado para controlar la visibilidad y los datos del formulario
+            let codigo = '';
+            let nombre = '';
+            let correo = '';
+            let telefono = '';
+            let mensaje = '';
+            let imagen_url = '';
+            let imagenSeleccionada = null;
+            let imagenUrlTemp = null;
+            let mostrarDatosCliente = false;
+
+            document.getElementById('form-obtener-cliente').addEventListener('submit', obtenerCliente);
+            document.getElementById('form-guardar-cambios').addEventListener('submit', guardarCambios);
+            document.getElementById('nuevaImagen').addEventListener('change', seleccionarImagen);
+
+            // Se ejecuta cuando se envía el formulario de consulta. Realiza una solicitud GET a la API y obtiene los datos del cliente correspondiente al código ingresado.
+            function obtenerCliente(event) {
+                event.preventDefault();
+                codigo = document.getElementById('codigo').value;
+                fetch(URL + 'clientes/' + codigo)
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json()
+                        } else {
+                            throw new Error('Error al obtener los datos del cliente.')
+                        }
+                    })
+                    .then(data => {
+                        nombre = data.nombre;
+                        correo = data.correo;
+                        telefono = data.telefono;
+                        mensaje = data.mensaje;
+                        imagen_url = data.imagen_url;
+                        mostrarDatosCliente = true; //Activa la vista del segundo formulario
+                        mostrarFormulario();
+                    })
+                    .catch(error => {
+                        alert('Código no encontrado.');
+                    });
+            }
+
+            // Muestra el formulario con los datos del cliente
+            function mostrarFormulario() {
+                if (mostrarDatosCliente) {
+                    document.getElementById('nombreModificar').value = nombre;
+                    document.getElementById('correoModificar').value = correo;
+                    document.getElementById('telefonoModificar').value = telefono;
+                    document.getElementById('mensajeModificar').value = mensaje;
+
+                    const imagenActual = document.getElementById('imagen-actual');
+                    if (imagen_url && !imagenSeleccionada) { // Verifica si imagen_url no está vacía y no se ha seleccionado una imagen
+                        //imagenActual.src = './static/imagenes/' + imagen_url;
+                        //imagenActual.src = 'https://www.pythonanywhere.com/user/sergiopython/files/home/sergiopython/mysite/static/imagenes/' + imagen_url;
+                        imagenActual.src = 'https://www.pythonanywhere.com/user/grupo12python/files/home/grupo12python/mysite/static/imagenes/' + imagen_url;
+                        //Al subir al servidor, deberá utilizarse la siguiente ruta. USUARIO debe ser reemplazado por el nombre de usuario de Pythonanywhere
+                        //imagenActual.src = 'https://www.pythonanywhere.com/user/USUARIO/files/home/USUARIO/mysite/static/imagenes/' + imagen_url;
+                        imagenActual.style.display = 'block'; // Muestra la imagen actual
+                    } else {
+                        imagenActual.style.display = 'none'; // Oculta la imagen si no hay URL
+                    }
+
+                    document.getElementById('datos-cliente').style.display = 'block';
+                } else {
+                    document.getElementById('datos-cliente').style.display = 'none';
+                }
+            }
+
+            // Se activa cuando el usuario selecciona una imagen para cargar.
+            function seleccionarImagen(event) {
+                const file = event.target.files[0];
+                imagenSeleccionada = file;
+                imagenUrlTemp = URL.createObjectURL(file); // Crea una URL temporal para la vista previa
+
+                const imagenVistaPrevia = document.getElementById('imagen-vista-previa');
+                imagenVistaPrevia.src = imagenUrlTemp;
+                imagenVistaPrevia.style.display = 'block';
+            }
+
+            // Se usa para enviar los datos modificados del cliente al servidor.
+            function guardarCambios(event) {
+                event.preventDefault();
+
+                const formData = new FormData();
+                formData.append('codigo', codigo);
+                formData.append('nombre', document.getElementById('nombreModificar').value);
+                formData.append('correo', document.getElementById('correoModificar').value);
+                formData.append('telefono', document.getElementById('telefonoModificar').value);
+                formData.append('mensaje', document.getElementById('mensajeModificar').value);
+
+                // Si se ha seleccionado una imagen nueva, la añade al formData.
+                if (imagenSeleccionada) {
+                    formData.append('imagen', imagenSeleccionada, imagenSeleccionada.name);
+                }
+
+                fetch(URL + 'clientes/' + codigo, {
+                    method: 'PUT',
+                    body: formData,
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json()
+                        } else {
+                            throw new Error('Error al guardar los cambios del cliente.')
+                        }
+                    })
+                    .then(data => {
+                        alert('Cliente actualizado correctamente.');
+                        limpiarFormulario();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al actualizar el cliente.');
+                    });
+            }
+
+            // Restablece todas las variables relacionadas con el formulario a sus valores iniciales, lo que efectivamente "limpia" el formulario.
+            function limpiarFormulario() {
+                document.getElementById('codigo').value = '';
+                document.getElementById('nombreModificar').value = '';
+                document.getElementById('correoModificar').value = '';
+                document.getElementById('telefonoModificar').value = '';
+                document.getElementById('mensajeModificar').value = '';
+                document.getElementById('nuevaImagen').value = '';
+
+                const imagenActual = document.getElementById('imagen-actual');
+                imagenActual.style.display = 'none';
+
+                const imagenVistaPrevia = document.getElementById('imagen-vista-previa');
+                imagenVistaPrevia.style.display = 'none';
+
+                codigo = '';
+                nombre = '';
+                correo = '';
+                telefono = '';
+                mensaje = '';
+                imagen_url = '';
+                imagenSeleccionada = null;
+                imagenUrlTemp = null;
+                mostrarDatosProducto = false;
+
+                document.getElementById('datos-cliente').style.display = 'none';
+            }
+        </script>
+    </body>
+</html>

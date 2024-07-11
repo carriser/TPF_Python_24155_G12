@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width"> 
+        <title>Club de Caballeros - Borrar cliente</title>
+        <link rel="stylesheet" href="./static/css/reset.css">
+        <link rel="stylesheet" href="./static/css/style.css">
+        <link rel="icon" href="./static/imagenes/logo-ovalo.ico">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.1/css/all.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    </head>
+
+    <body>
+        <header>
+            <div class="caja">
+                <img src="./static/imagenes/logo-principal 350x270.png" alt="logo de la barbería">
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="productos.html">Productos</a></li>
+                        <li><a href="estilos.html">Estilos</a></li>
+                        <li><a href="contacto.html">Contacto</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <h1>Borrar Cliente</h1><br>
+
+        <table id="clientes-table" class="tabla2"> <!-- Se crea una tabla para mostrar los clientes. -->
+            <thead> <!--Encabezado de la tabla con columnas para código, nombre, correo, teléfono, y acciones.-->
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table><br>
+
+        <a class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover" href="consultas.html"
+            style="text-align: center; display: inline-block; width: 100%; font-size: 25px;" >Volver a Consultas</a>
+
+        <footer>
+            <img src="./static/imagenes/logo-foot.png">
+            <p class="copyright">&copy Copyright Barbería Club de Caballeros - 2020</p>
+            <a href="https://www.facebook.com/BarberiaClubDeCaballeros" target="_blank"> <i class="fab fa-facebook fa-2x" aria-hidden="true"></i></a>
+            <a href="https://www.instagram.com/barberiaclubdecaballerosok/?hl=es" target="_blank"> <i class="fab fa-instagram fa-2x" aria-hidden="true"></i></a>
+        </footer>
+
+        <script>
+            //const URL = "https://FlorCodo.pythonanywhere.com/"
+            //const URL = "https://juanpablocodo.pythonanywhere.com/"
+            //const URL = "http://127.0.0.1:5000/"
+            //const URL = "https://sergiopython.pythonanywhere.com/"
+            const URL = "https://grupo12python.pythonanywhere.com/"
+
+            // Obtiene el listado de clientes
+            function obtenerClientes() {
+                fetch(URL + 'clientes') // Realiza una solicitud GET al servidor y obtiene la lista de clientes.
+                    .then(response => {
+                        // Si es exitoso (response.ok), convierte los datos de la respuesta de formato JSON a un objeto JavaScript.
+                        if (response.ok) { return response.json(); }
+                    })
+                    // Asigna los datos de los clientes obtenidos a la propiedad clientes del estado.
+                    .then(data => {
+                        const clientesTable = document.getElementById('clientes-table').getElementsByTagName('tbody')[0];
+                        clientesTable.innerHTML = ''; // Limpia la tabla antes de insertar nuevos datos
+                        data.forEach(cliente => {
+                            const row = clientesTable.insertRow();
+                            row.innerHTML = `
+                                <td>${cliente.codigo}</td>
+                                <td>${cliente.nombre}</td>
+                                <td>${cliente.correo}</td>
+                                <td>${cliente.telefono}</td>
+                                <td><button class="btn btn-danger" onclick="eliminarCliente('${cliente.codigo}')">Borrar</button></td>
+                            `;
+                        });
+                    })
+                    // Captura y maneja errores, mostrando un alerta en caso de error al obtener los clientes.
+                    .catch(error => {
+                        console.log('Error:', error);
+                        alert('Error al obtener los clientes.');
+                    });
+            }
+
+            // Se utiliza para eliminar un cliente.
+            function eliminarCliente(codigo) {
+                // Se muestra un diálogo de confirmación. Si el usuario confirma, se realiza una solicitud DELETE al servidor a través de fetch(URL + 'clientes/${codigo}', {method: 'DELETE' }).
+                if (confirm('¿Estás seguro de que quieres eliminar este cliente?')) {
+                    fetch(URL + `clientes/${codigo}`, { method: 'DELETE' })
+                        .then(response => {
+                            if (response.ok) {
+                                // Si es exitoso (response.ok), elimina el cliente y da mensaje de ok.
+                                obtenerClientes(); // Vuelve a obtener la lista de clientes para actualizar la tabla.
+                                alert('Cliente eliminado correctamente.');
+                            }
+                        })
+                        // En caso de error, mostramos un alerta con un mensaje de error.
+                        .catch(error => {
+                            alert(error.message);
+                        });
+                }
+            }
+
+            // Cuando la página se carga, llama a obtenerClientes para cargar la lista de clientes.
+            document.addEventListener('DOMContentLoaded', obtenerClientes);
+        </script>
+    </body>
+</html>
